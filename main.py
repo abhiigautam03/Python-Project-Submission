@@ -1,20 +1,28 @@
-from book_filter import load_all_books, filter_books, suggest_random_book
+from book_api import get_books_from_google
+import pandas as pd
 
-try:
-    df = load_all_books()
+def main():
+    print("📚 Welcome to the Book Suggestion App!")
+    
+    query = input("🔍 Enter a keyword, genre, or author: ").strip()
+    count = input("📘 How many book suggestions do you want? (max 40): ").strip()
+    year = input("📅 Filter by publication year (optional): ").strip()
 
-    if df.empty:
-        print("No book data found. Make sure CSV files are in the folder.")
-        exit()
+    try:
+        max_results = min(int(count), 40)
+    except:
+        max_results = 10
 
-    genre = input("Enter a genre to filter by (or press Enter to skip): ").strip()
-    year = input("Enter a year to filter by (or press Enter to skip): ").strip()
+    year_filter = year if year.isdigit() else None
 
-    filtered = filter_books(df, genre=genre if genre else None, year=year if year else None)
+    df = get_books_from_google(query, max_results, year_filter)
 
-    suggest_random_book(filtered)
+    if not df.empty:
+        save = input("💾 Save results to CSV? (yes/no): ").strip().lower()
+        if save in ["yes", "y"]:
+            filename = f"{query}_books.csv"
+            df.to_csv(filename, index=False)
+            print(f"✅ Results saved to {filename}")
 
-except KeyboardInterrupt:
-    print("\nOperation cancelled by user.")
-except Exception as e:
-    print("Something went wrong:", e)
+if __name__ == "__main__":
+    main()

@@ -1,29 +1,59 @@
 import pandas as pd
 import random
 import os
+import requests
 
-def load_all_books(folder="."):
-    """
-    Load and combine all *_books.csv files in the given folder.
-    Returns a single pandas DataFrame.
-    """
-    all_files = [f for f in os.listdir(folder) if f.endswith("_books.csv")]
-    dataframes = []
+# ------------------ Google Books API Integration ------------------
 
-    for file in all_files:
-        df = pd.read_csv(os.path.join(folder, file))
-        dataframes.append(df)
+def get_books_from_google(query="fiction", max_results=20):
+    api_key = "AIzaSyCaJ9wTCBTtkpnUnpSLIdX8AuJBRSy6N2E"  # Your actual API key
+    url = f"https://www.googleapis.com/books/v1/volumes?q={query}&maxResults={max_results}&key={api_key}"
 
-    combined_df = pd.concat(dataframes, ignore_index=True)
-    return combined_df
+    response = requests.get(url)
+    if response.status_code != 200:
+        print("Error fetching data from API:", response.status_code)
+        return pd.DataFrame()
 
+    books = response.json().get("items", [])
+    if not books:
+        return pd.DataFrame()
+
+    book_data = []
+
+    for item in books:
+        volume = item.get("volumeInfo", {})
+
+        title = volume.get("title", "Unknown Title")
+        authors = ", ".join(volume.get("authors", ["Unknown Author"]))
+        published_date = volume.get("publishedDate", "")
+        categories = ", ".join(volume.get("categories", ["Unknown Genre"]))
+        description = volume.get("description", "No description available")
+        popularity = item.get("searchInfo", {}).get("textSnippet", "")
+        info_link = volume.get("infoLink", "")
+
+        # Extract year safely
+        try:
+            year = int(published_date[:4])
+        except:
+            year = None
+
+        book_data.append({
+            "title": title,
+            "author": authors,
+            "year": year,
+            "subject": categories,
+            "description": description,
+            "popularity": popularity,
+            "link": info_link
+        })
+
+    return pd.DataFrame(book_data)
+
+# ------------------ Filtering & Suggesting ------------------
 
 def filter_books(df, genre=None, year=None):
-    """
-    Filter books by genre and/or year.
-    """
     if genre:
-        df = df[df["subject"].str.lower() == genre.lower()]
+        df = df[df["subject"].str.lower().str.contains(genre.lower(), na=False)]
 
     if year:
         try:
@@ -34,19 +64,17 @@ def filter_books(df, genre=None, year=None):
 
     return df
 
-
 def suggest_random_book(df):
-    """
-    Randomly pick a book and return its details.
-    """
     if df.empty:
         print("No books available with the given filters.")
-        return None
+        return
 
-    random_book = df.sample(1).iloc[0]
+    book = df.sample(1).iloc[0]
 
     print("\n📚 Book Suggestion:")
-    print(f"Title: {random_book['title']}")
-    print(f"Author: {random_book['author']}")
-    print(f"Year: {random_book['year']}")
-    print(f"Genre: {random_book['subject']}")
+    print(f"Title: {book['title']}")
+    print(f"Author(s): {book['author']}")
+    print(f"Genre(s): {book['subject']}")
+    print(f"Published Year: {book['year']}")
+    print(f"Description: {book['description'][:300]}...")
+    print(f"More Info: {book['link']}")
