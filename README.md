@@ -1,25 +1,33 @@
-# Book Suggestion App
+# 📚 Book Suggestion App
 
-## Purpose
-This project is a Book Suggestion App that fetches book data from the Google Books API, allowing users to filter books by genre, rating, publication year, and popularity. It also provides a random book suggestion from the filtered list.
+![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white) ![GitHub Repo Size](https://img.shields.io/github/repo-size/abhiigautam03/Python-Project-Submission?color=green) ![License](https://img.shields.io/badge/License-MIT-yellow?logo=github)  
 
-## Features
-- Select from 6 genres: Thriller, Horror, Sci-Fi, Drama, Fantasy, Romance
-- Filter books by:
-  - Minimum rating (only available ratings are shown)
-  - Publication year (only available years are shown)
-  - Sort by popularity
-- Display top N books (user chooses how many, 1-40)
-- Random book suggestion from filtered results
-- Robust error handling for:
-  - Network issues
-  - Invalid inputs
-  - Empty API results
+A **Python-based interactive book suggestion application** that fetches book data from the **Google Books API**. Filter books by rating, publication year, popularity, and genre, and export your favorite suggestions to a CSV file.  
 
-## Libraries Used
-- `requests` – For API calls
-- `pandas` – For data processing
+---
 
-## Instructions
-1. Make sure Python 3.x is installed.
-2. Install required libraries:
+## ✨ **Features**
+
+- 🚀 Fetches book data dynamically from Google Books API  
+- 🔍 Filter books by:
+  - Genre  
+  - Minimum rating  
+  - Publication year  
+  - Popularity  
+- 🖥️ Display top N book suggestions in the terminal  
+- 📁 Export displayed suggestions to a **CSV file**  
+- 🎲 Random book suggestion feature for spontaneous discovery  
+
+---
+
+## 🛠️ **Getting Started**
+
+### **Prerequisites**
+
+- Python 3.10+ installed  
+- `pip` installed  
+
+### **Install Dependencies**
+
+```bash
+pip install -r requirements.txt

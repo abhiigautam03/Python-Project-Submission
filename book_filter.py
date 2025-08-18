@@ -1,35 +1,28 @@
-# book_filter.py
 import pandas as pd
 
-def filter_books(df, rating_choice=None, year_choice=None, sort_by_pop=False, genre=None):
+def filter_books(df, rating_choice=None, year_choice=None, sort_by_pop=False):
     """Filter books, guaranteed to return results if possible."""
     if df.empty:
         return df
     
     filtered_df = df.copy()
     
-    # Filter by genre (partial match, case-insensitive)
-    if genre:
-        filtered_df = filtered_df[filtered_df['Genre'].str.contains(genre, case=False, na=False)]
-    
-    # Filter by rating
     if rating_choice is not None:
         filtered_df.loc[:, 'Rating'] = filtered_df['Rating'].fillna(0).astype(float)
         filtered_df = filtered_df[filtered_df['Rating'] >= rating_choice]
     
-    # Filter by publication year
     if year_choice is not None:
         filtered_df.loc[:, 'Publication_Year'] = filtered_df['Publication_Year'].astype(str)
         filtered_df = filtered_df[filtered_df['Publication_Year'] == str(year_choice)]
     
-    # Sort by popularity
     if sort_by_pop:
         filtered_df = filtered_df.sort_values(by="Popularity", ascending=False)
     
-    # Fallback to original df if filtering gives nothing
+    # Fallback if filtered_df is empty
     if filtered_df.empty:
-        filtered_df = df.sort_values(by="Popularity", ascending=False) if sort_by_pop else df
-        
+        print("\n⚠️ No books match the selected filters. Showing top books from API instead.")
+        filtered_df = df.sort_values(by="Popularity", ascending=False)
+    
     return filtered_df
 
 def display_books(df, max_results=10):

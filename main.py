@@ -1,6 +1,7 @@
 # main.py
 from book_api import fetch_books_by_genre
 from book_filter import filter_books, display_books, suggest_random_book
+import os
 
 GENRES = {
     "Thriller": "Thriller",
@@ -50,14 +51,8 @@ def main():
     sort_pop_input = input("🔥 Sort by Popularity? (yes/no): ").strip().lower()
     sort_by_pop = sort_pop_input == "yes"
     
-    # Filter books (now includes genre)
-    filtered_df = filter_books(
-        df,
-        rating_choice=rating_choice,
-        year_choice=year_choice,
-        sort_by_pop=sort_by_pop,
-        genre=genre_query
-    )
+    # Filter books
+    filtered_df = filter_books(df, rating_choice, year_choice, sort_by_pop)
     
     # Ask how many books to show
     max_books_input = input("\n📘 How many book suggestions? (1-40, default 10): ").strip()
@@ -67,8 +62,18 @@ def main():
     elif max_books < 1:
         max_books = 1
     
-    # Display top books
-    display_books(filtered_df, max_results=max_books)
+    # Ensure there are enough books for terminal display
+    display_df = filtered_df.head(max_books)
+    
+    # Display books
+    display_books(display_df, max_results=max_books)
+    
+    # Export exactly the same books to CSV
+    output_folder = "output"
+    os.makedirs(output_folder, exist_ok=True)
+    csv_file = os.path.join(output_folder, "book_suggestions.csv")
+    display_df.to_csv(csv_file, index=False)
+    print(f"\n✅ Top {len(display_df)} book suggestions exported to '{csv_file}'")
     
     # Random book suggestion
     random_choice = input("\nDo you want a random book suggestion? (yes/no): ").strip().lower()
