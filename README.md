@@ -1,40 +1,25 @@
-# 📚 Book Suggestion App
+# Book Suggestion App
 
-A simple and interactive Python project that fetches book recommendations using the **Google Books API** based on user preferences like **genre**, **publication year**, and **popularity**.
+## Purpose
+This project is a Book Suggestion App that fetches book data from the Google Books API, allowing users to filter books by genre, rating, publication year, and popularity. It also provides a random book suggestion from the filtered list.
 
----
+## Features
+- Select from 6 genres: Thriller, Horror, Sci-Fi, Drama, Fantasy, Romance
+- Filter books by:
+  - Minimum rating (only available ratings are shown)
+  - Publication year (only available years are shown)
+  - Sort by popularity
+- Display top N books (user chooses how many, 1-40)
+- Random book suggestion from filtered results
+- Robust error handling for:
+  - Network issues
+  - Invalid inputs
+  - Empty API results
 
-## 🚀 Features
+## Libraries Used
+- `requests` – For API calls
+- `pandas` – For data processing
 
-- 🔎 **Search by Genre, Keyword, or Author**  
-  Get book recommendations filtered by a specific genre (like "romance", "horror", "fiction", etc.).
-
-- 📅 **Filter by Publication Year**  
-  Optionally filter books published in a specific year (e.g., 2020).
-
-- ⭐ **Sort by Popularity**  
-  Books are sorted based on the number of user ratings to prioritize popular reads.
-
-- 📁 **Export to CSV**  
-  Save the results to a `.csv` file for future reference.
-
-- ❌ **Handles Empty or Invalid Results Gracefully**  
-  Displays a message if no relevant books are found.
-
----
-
-## 🧠 Technologies Used
-
-- Python 🐍
-- Google Books API 🌐
-- Pandas 📊
-- Requests 📡
-
----
-
-## 🖥️ How to Run
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/abhiigautam03/Python-Project-Submission.git
-   cd Python-Project-Submission/Book_Suggestion_App
+## Instructions
+1. Make sure Python 3.x is installed.
+2. Install required libraries:

@@ -1,80 +1,62 @@
+# book_filter.py
 import pandas as pd
-import random
-import os
-import requests
 
-# ------------------ Google Books API Integration ------------------
-
-def get_books_from_google(query="fiction", max_results=20):
-    api_key = "AIzaSyCaJ9wTCBTtkpnUnpSLIdX8AuJBRSy6N2E"  # Your actual API key
-    url = f"https://www.googleapis.com/books/v1/volumes?q={query}&maxResults={max_results}&key={api_key}"
-
-    response = requests.get(url)
-    if response.status_code != 200:
-        print("Error fetching data from API:", response.status_code)
-        return pd.DataFrame()
-
-    books = response.json().get("items", [])
-    if not books:
-        return pd.DataFrame()
-
-    book_data = []
-
-    for item in books:
-        volume = item.get("volumeInfo", {})
-
-        title = volume.get("title", "Unknown Title")
-        authors = ", ".join(volume.get("authors", ["Unknown Author"]))
-        published_date = volume.get("publishedDate", "")
-        categories = ", ".join(volume.get("categories", ["Unknown Genre"]))
-        description = volume.get("description", "No description available")
-        popularity = item.get("searchInfo", {}).get("textSnippet", "")
-        info_link = volume.get("infoLink", "")
-
-        # Extract year safely
-        try:
-            year = int(published_date[:4])
-        except:
-            year = None
-
-        book_data.append({
-            "title": title,
-            "author": authors,
-            "year": year,
-            "subject": categories,
-            "description": description,
-            "popularity": popularity,
-            "link": info_link
-        })
-
-    return pd.DataFrame(book_data)
-
-# ------------------ Filtering & Suggesting ------------------
-
-def filter_books(df, genre=None, year=None):
-    if genre:
-        df = df[df["subject"].str.lower().str.contains(genre.lower(), na=False)]
-
-    if year:
-        try:
-            year = int(year)
-            df = df[df["year"] == year]
-        except ValueError:
-            print("Invalid year entered.")
-
-    return df
-
-def suggest_random_book(df):
+def filter_books(df, rating_choice=None, year_choice=None, sort_by_pop=False, genre=None):
+    """Filter books, guaranteed to return results if possible."""
     if df.empty:
-        print("No books available with the given filters.")
+        return df
+    
+    filtered_df = df.copy()
+    
+    # Filter by genre (partial match, case-insensitive)
+    if genre:
+        filtered_df = filtered_df[filtered_df['Genre'].str.contains(genre, case=False, na=False)]
+    
+    # Filter by rating
+    if rating_choice is not None:
+        filtered_df.loc[:, 'Rating'] = filtered_df['Rating'].fillna(0).astype(float)
+        filtered_df = filtered_df[filtered_df['Rating'] >= rating_choice]
+    
+    # Filter by publication year
+    if year_choice is not None:
+        filtered_df.loc[:, 'Publication_Year'] = filtered_df['Publication_Year'].astype(str)
+        filtered_df = filtered_df[filtered_df['Publication_Year'] == str(year_choice)]
+    
+    # Sort by popularity
+    if sort_by_pop:
+        filtered_df = filtered_df.sort_values(by="Popularity", ascending=False)
+    
+    # Fallback to original df if filtering gives nothing
+    if filtered_df.empty:
+        filtered_df = df.sort_values(by="Popularity", ascending=False) if sort_by_pop else df
+        
+    return filtered_df
+
+def display_books(df, max_results=10):
+    """Display books nicely with sequential numbering."""
+    if df.empty:
+        print("\n⚠️ No books found from API.")
         return
 
-    book = df.sample(1).iloc[0]
+    for idx, (_, row) in enumerate(df.head(max_results).iterrows(), start=1):
+        print(f"\n📚 Book {idx}")
+        print(f"Title           : {row['Title']}")
+        print(f"Author(s)       : {row['Authors']}")
+        print(f"Genre(s)        : {row['Genre']}")
+        print(f"Publication Year: {row['Publication_Year']}")
+        print(f"Rating          : {row['Rating']}")
+        print(f"Popularity      : {row['Popularity']}")
 
-    print("\n📚 Book Suggestion:")
-    print(f"Title: {book['title']}")
-    print(f"Author(s): {book['author']}")
-    print(f"Genre(s): {book['subject']}")
-    print(f"Published Year: {book['year']}")
-    print(f"Description: {book['description'][:300]}...")
-    print(f"More Info: {book['link']}")
+def suggest_random_book(df):
+    """Pick a random book from filtered DataFrame."""
+    if df.empty:
+        print("⚠️ No books available for random suggestion.")
+        return
+    book = df.sample(1).iloc[0]
+    print("\n🎲 Random Book Suggestion")
+    print(f"Title           : {book['Title']}")
+    print(f"Author(s)       : {book['Authors']}")
+    print(f"Genre(s)        : {book['Genre']}")
+    print(f"Publication Year: {book['Publication_Year']}")
+    print(f"Rating          : {book['Rating']}")
+    print(f"Popularity      : {book['Popularity']}")
